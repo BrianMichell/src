@@ -41,6 +41,7 @@ etcdir = os.path.join(shrdir, 'madagascar', 'etc')
 
 opts = configure.options('config.py')
 opts.Add('RSFROOT','RSF installation root',root)
+opts.Add('MDIO', 'Enable MDIO support for the C++ API (optional)', 0)
 opts.Update(env)
 
 if not os.path.isfile('config.py'):

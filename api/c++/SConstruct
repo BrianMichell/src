@@ -4,49 +4,83 @@ import bldutil
 
 sources = Split('rsf cub')
 
-try: # distribution version
+try:  # distribution version
     Import('env root libdir incdir')
     env = env.Clone()
-except: # local version
+except:  # local version
     env = bldutil.Debug()
     root = None
     SConscript('../c/SConstruct')
 
-dynpre = env.get('DYNLIB','')
+dynpre = env.get('DYNLIB', '')
 
 env.Prepend(CPPPATH=['../../include'],
             LIBPATH=['../../lib'],
             LIBS=[dynpre + 'rsf'])
 
-dynlib = ('-static-intel' not in env.get('LINKFLAGS',''))
-dlibs = ['drsf']+env.get('LIBS',[])
+# --- New MDIO optional dependency support ---
+if int(env.get('MDIO', 0)):
+    print("MDIO support enabled. Installing MDIO dependency if needed...")
+    mdio_dir = os.path.join(root, 'mdio_installation') if root else 'mdio_installation'
 
-if 'c++' in env.get('API',[]):
-    ccfiles = [x+'.cc' for x in sources]
-    hhfiles = [x+'.hh' for x in sources]
-    dobjects = list(map(env.SharedObject,ccfiles))
+    if not os.path.exists(mdio_dir):
+        print("MDIO directory does not exist. Cloning and installing MDIO...")
+        os.makedirs(mdio_dir, exist_ok=True)  # Ensure directory exists
 
-    lib = env.StaticLibrary('rsf++',ccfiles,CCFLAGS='')
-    env.Install('../../lib',lib)
-    env.Install('../../include',hhfiles)
+        # Construct the command string
+        command_str = (
+            f'git clone --branch drivers_enhancement https://github.com/BrianMichell/mdio-cpp-installer.git {mdio_dir} '
+            f'&& cd {mdio_dir} '
+            f'&& chmod +x install.sh '
+            f'&& ./install.sh {root if root else "."} --curl'
+        )
+
+        print("Executing MDIO installation command:", command_str)
+
+        # Run the command immediately
+        if env.Execute(command_str) != 0:
+            print("Error: MDIO installation failed!")
+            Exit(1)
+
+    # Append MDIO paths and link directive.
+    env.Append(CPPPATH=[os.path.join(mdio_dir, 'include')])
+    env.Append(LIBPATH=[os.path.join(mdio_dir, 'lib')])
+    env.Append(LIBS=['mdio'])
+    env.Append(CCFLAGS=['-DHAVE_MDIO'])
+
+# --- End new MDIO support ---
+
+dynlib = ('-static-intel' not in env.get('LINKFLAGS', ''))
+dlibs = ['drsf'] + env.get('LIBS', [])
+
+if 'c++' in env.get('API', []):
+    ccfiles = [x + '.cc' for x in sources]
+    hhfiles = [x + '.hh' for x in sources]
+    dobjects = list(map(env.SharedObject, ccfiles))
+
+    lib = env.StaticLibrary('rsf++', ccfiles, CCFLAGS='')
+    env.Install('../../lib', lib)
+    env.Install('../../include', hhfiles)
 
     if root:
-        env.Install(libdir,lib)
-        env.Install(incdir,hhfiles)
+        env.Install(libdir, lib)
+        env.Install(incdir, hhfiles)
 
     if dynlib:
-        dlib = env.SharedLibrary('rsf++',dobjects,SHLIBPREFIX='libd',LIBS=dlibs)
-        env.Install('../../lib',dlib)
+        dlib = env.SharedLibrary('rsf++', dobjects, SHLIBPREFIX='libd', LIBS=dlibs)
+        env.Install('../../lib', dlib)
 
         if root:
-            install = env.Install(libdir,dlib)
+            install = env.Install(libdir, dlib)
+            if dynpre and env['PLATFORM'] == 'darwin':
+                env.AddPostAction(
+                    install,
+                    '%s -change build/api/c/libdrsf.dylib '
+                    '%s/libdrsf.dylib %s' % (
+                        WhereIs('install_name_tool'), libdir, install[0]
+                    )
+                )
 
-            if dynpre and env['PLATFORM'] == 'darwin':                
-                env.AddPostAction(install,
-                '%s -change build/api/c/libdrsf.dylib '
-                '%s/libdrsf.dylib %s' % \
-                (WhereIs('install_name_tool'),libdir,install[0]))
-                             
-    for file in ['getpar','file']:
+    for file in ['getpar', 'file']:
         test = 'Test' + file + '.cc'
-        env.Program(file,[test,lib],PROGSUFFIX='.x',PROGPREFIX='Test')
+        env.Program(file, [test, lib], PROGSUFFIX='.x', PROGPREFIX='Test')
