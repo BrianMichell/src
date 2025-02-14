@@ -28,7 +28,7 @@ env.Prepend(CPPPATH=['../../include'],
 
 # --- MDIO Optional Dependency Support ---
 if int(env.get('MDIO', 0)):
-    mdio_dir = setup_mdio(env)
+    mdio_dir = setup_mdio(env, root)
 # --- End MDIO support ---
 
 dynlib = ('-static-intel' not in env.get('LINKFLAGS', ''))

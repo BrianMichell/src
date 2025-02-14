@@ -9,7 +9,7 @@ def setup_mdio(env, root=None):
     
     The optional 'root' parameter can be passed from the calling SConscript.
     """
-    mdio_dir = os.path.join(root, 'mdio_installation') if root else 'mdio_installation'
+    mdio_dir = os.path.abspath(os.path.join(root, 'mdio_installation')) if root else os.path.abspath('mdio_installation')
     is_cleaning = ('clean' in COMMAND_LINE_TARGETS or 
                    'distclean' in COMMAND_LINE_TARGETS or 
                    GetOption('clean'))
