@@ -1,6 +1,14 @@
 import os, sys, string, glob
 sys.path.append('../../framework')
+sys.path.append('../../api/c++')
+from SCons.Script import Dir
+api_cpp_dir = Dir('#/api/c++').abspath
+if api_cpp_dir not in sys.path:
+    sys.path.insert(0, api_cpp_dir)
+# from setup_mdio import setup_mdio
 import bldutil
+import setup_mdio  # Import the module directly
+from setup_mdio import setup_mdio  # Then import the functio
 
 progs = '''
 klipp
@@ -28,19 +36,13 @@ for flag in auxFlags:
     env.Append(CXXFLAGS=f" {flag}")
 
 if int(env.get('MDIO', 0)):
-    print("MDIO support enabled. Appending MDIO dependency flags.")
-    mdio_dir = os.path.join(root, 'mdio_installation') if root else 'mdio_installation'
-    env.Append(CPPPATH=[os.path.join(mdio_dir, 'inst', 'include')])
-    env.Append(LIBPATH=[os.path.join(mdio_dir, 'inst', 'lib'),
-                        os.path.join(mdio_dir, 'inst', 'lib', 'drivers')])
-    env.Append(CCFLAGS=['-DHAVE_MDIO'])
-    LDFLAGS_STRING = f"-Wl,-rpath,{os.path.join(mdio_dir, 'inst', 'lib')},-rpath,{os.path.join(mdio_dir, 'inst', 'lib', 'drivers')},--whole-archive,-L{os.path.join(mdio_dir, 'inst', 'lib')},-L{os.path.join(mdio_dir, 'inst', 'lib', 'drivers')},-lnlohmann_json_schema_validator,-ltensorstore_driver_zarr_bzip2_compressor,-ltensorstore_driver_zarr_driver,-ltensorstore_driver_zarr_spec,-ltensorstore_driver_zarr_zlib_compressor,-ltensorstore_driver_zarr_zstd_compressor,-ltensorstore_driver_zarr_blosc_compressor,-ltensorstore_kvstore_gcs_http,-ltensorstore_kvstore_gcs_gcs_resource,-ltensorstore_kvstore_gcs_validate,-ltensorstore_kvstore_gcs_http_gcs_resource,-ltensorstore_driver_json,-ltensorstore_internal_cache_cache_pool_resource,-ltensorstore_internal_data_copy_concurrency_resource,-ltensorstore_kvstore_file,-ltensorstore_internal_file_io_concurrency_resource,-ltensorstore_internal_cache_kvs_backed_chunk_cache,-labsl,-lblosc,-ltensorstore,-lre2,-lriegeli,-lcurl,-lopenssl,--no-whole-archive,-lpthread,-lm"
-    env.Append(LINKFLAGS=LDFLAGS_STRING.split())
-    DIRS = [d for d in glob.glob(os.path.join(mdio_dir, "inst", "include", "*"))
-            if os.path.isdir(d) and "gtest-src" not in d]
-    DIRS.append(os.path.join(mdio_dir, "inst", "include", "nlohmann_json-src", "include"))
-    DIRS.append(os.path.join(mdio_dir, "inst", "include", "half-src", "include"))
-    env.Append(CPPPATH=DIRS)
+    print("MDIO support enabled. Configuring MDIO dependency via API module.")
+    # env = setup_mdio(env, root)
+    setup_mdio(env, root)
+    print("###########After setting up MDIO###########")
+    print(f"CPPPATH: {env.get('CPPPATH')}")
+    print(f"LIBPATH: {env.get('LIBPATH')}")
+    print(f"LINKFLAGS: {env.get('LINKFLAGS')}")
 else:
     print("WARNING: MDIO support is disabled. Compiling without MDIO support.")
     env.Append(CCFLAGS=['-DNO_MDIO'])
