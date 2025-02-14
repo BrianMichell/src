@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, glob
 sys.path.append('../../framework')
 import bldutil
 
@@ -18,37 +18,60 @@ env.Prepend(CPPPATH=['../../include'],
             LIBPATH=['../../lib'],
             LIBS=[dynpre + 'rsf'])
 
-# --- New MDIO optional dependency support ---
+# --- MDIO Optional Dependency Support ---
 if int(env.get('MDIO', 0)):
-    print("MDIO support enabled. Installing MDIO dependency if needed...")
-    mdio_dir = os.path.join(root, 'mdio_installation') if root else 'mdio_installation'
+    print(f"Command line targets: {COMMAND_LINE_TARGETS}")
+    # Check both clean targets and -c flag
+    is_cleaning = ('clean' in COMMAND_LINE_TARGETS or 
+                  'distclean' in COMMAND_LINE_TARGETS or 
+                  GetOption('clean'))
+    
+    if not is_cleaning:
+        print("MDIO support enabled. Installing MDIO dependency if needed...")
+        mdio_dir = os.path.join(root, 'mdio_installation') if root else 'mdio_installation'
 
-    if not os.path.exists(mdio_dir):
-        print("MDIO directory does not exist. Cloning and installing MDIO...")
-        os.makedirs(mdio_dir, exist_ok=True)  # Ensure directory exists
+        if not os.path.exists(mdio_dir):
+            print("MDIO directory does not exist. Cloning and installing MDIO...")
+            os.makedirs(mdio_dir, exist_ok=True)  # Ensure directory exists
 
-        # Construct the command string
-        command_str = (
-            f'git clone --branch drivers_enhancement https://github.com/BrianMichell/mdio-cpp-installer.git {mdio_dir} '
-            f'&& cd {mdio_dir} '
-            f'&& chmod +x install.sh '
-            f'&& ./install.sh {root if root else "."} --curl'
-        )
+            # Construct the command string
+            command_str = (
+                f'git clone --branch drivers_enhancement https://github.com/BrianMichell/mdio-cpp-installer.git {mdio_dir} '
+                f'&& cd {mdio_dir} '
+                f'&& chmod +x install.sh '
+                f'&& ./install.sh {f"{mdio_dir}/inst" if mdio_dir else "."} --curl'
+            )
 
-        print("Executing MDIO installation command:", command_str)
+            print("Executing MDIO installation command:", command_str)
 
-        # Run the command immediately
-        if env.Execute(command_str) != 0:
-            print("Error: MDIO installation failed!")
-            Exit(1)
+            # Run the command immediately
+            if env.Execute(command_str) != 0:
+                print("Error: MDIO installation failed!")
+                Exit(1)
 
-    # Append MDIO paths and link directive.
-    env.Append(CPPPATH=[os.path.join(mdio_dir, 'include')])
-    env.Append(LIBPATH=[os.path.join(mdio_dir, 'lib')])
-    env.Append(LIBS=['mdio'])
-    env.Append(CCFLAGS=['-DHAVE_MDIO'])
+        # Set MDIO paths
+        # NOTE: The libraries and headers are installed under mdio_installation/inst
+        env.Append(CPPPATH=[os.path.join(mdio_dir, 'inst', 'include')])
+        env.Append(LIBPATH=[os.path.join(mdio_dir, 'inst', 'lib')])
+        env.Append(LIBPATH=[os.path.join(mdio_dir, 'inst', 'lib', 'drivers')])
+        # env.Append(LIBS=['mdio'])
+        env.Append(CCFLAGS=['-DHAVE_MDIO'])
 
-# --- End new MDIO support ---
+        # Set runtime linking flags for MDIO
+        env.Append(LINKFLAGS=[
+            f"-Wl,-rpath,{os.path.join(mdio_dir, 'inst', 'lib')}",
+            f"-Wl,-rpath,{os.path.join(mdio_dir, 'inst', 'lib', 'drivers')}",
+            "-ltensorstore", "-ltensorstore_driver_json",
+            "-ltensorstore_driver_zarr_driver", "-ltensorstore_driver_zarr_spec",
+            "-ltensorstore_driver_zarr_zstd_compressor",
+            "-ltensorstore_internal_cache_cache_pool_resource",
+            "-ltensorstore_internal_file_io_concurrency_resource",
+            "-ltensorstore_kvstore_file",
+            "-labsl", "-lblosc", "-lre2", "-lriegeli", "-lcurl", "-lopenssl",
+            "-pthread", "-lm"
+        ])
+        print(f"The linking flags from the API level build: {env.get('LINKFLAGS', '')}")
+# --- End MDIO support ---
 
 dynlib = ('-static-intel' not in env.get('LINKFLAGS', ''))
 dlibs = ['drsf'] + env.get('LIBS', [])
@@ -72,6 +95,7 @@ if 'c++' in env.get('API', []):
 
         if root:
             install = env.Install(libdir, dlib)
+
             if dynpre and env['PLATFORM'] == 'darwin':
                 env.AddPostAction(
                     install,
