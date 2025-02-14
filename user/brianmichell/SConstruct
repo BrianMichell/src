@@ -1,255 +1,66 @@
-# import os, sys, re, string, glob
-# sys.path.append('../../framework')
-# import bldutil
-
-
-# # Explicitly add Madagascar's Python path
-# # RSFSRC = os.environ.get("RSFSRC", "/path/to/madagascar/source")  # Update if necessary
-# RSFSRC = os.environ.get("RSFSRC", "/home/brian_michell_tgs_com/source/Madagascar")
-# sys.path.append(os.path.join(RSFSRC, "python"))
-
-# # Clone the Madagascar environment
-# myenv = Environment()
-
-# # try:  # distributed version
-# #     Import('env root pkgdir bindir')
-# #     myenv = env.Clone()
-# # except: # local version
-# #     myenv = bldutil.Debug()
-# #     root = None
-# #     SConscript('../../api/c++/SConstruct')
-
-# # Set paths for the installed MDIO library
-# INSTALLED_DIR = "/home/brian_michell_tgs_com/source/Madagascar/installed_mdio"
-
-# # Define base directory for includes
-# BASE_DIR = os.path.join(INSTALLED_DIR, "include")
-
-# # Add the base include directory itself
-# myenv.Append(CPPPATH=[BASE_DIR])
-
-# # Get all direct child directories, excluding gtest
-# import glob
-# DIRS = [d for d in glob.glob(os.path.join(BASE_DIR, "*"))
-#         if os.path.isdir(d) and "gtest-src" not in d]
-
-# # Add special case directories
-# DIRS.append(os.path.join(INSTALLED_DIR, "include/nlohmann_json-src/include"))
-# DIRS.append(os.path.join(INSTALLED_DIR, "include/half-src/include"))
-
-# # Update include paths
-# myenv.Append(CPPPATH=DIRS)
-
-# # Add compilation flags
-# myenv.Append(CXXFLAGS=[
-#     "-w",  # Disable warnings
-#     "-DMAX_NUM_SLICES=32"
-# ])
-
-# print(myenv.get("CPPPATH"))
-
-# # Add library paths
-# myenv.Append(LIBPATH=[
-#     os.path.join(INSTALLED_DIR, "lib"),
-#     os.path.join(INSTALLED_DIR, "lib/drivers"),
-# ])
-
-# # Use a predefined LDFLAGS string from Makefile, replacing shell-style variables with Python formatting
-# LDFLAGS_STRING = f"-Wl,-rpath,{INSTALLED_DIR}/lib/drivers,-rpath,{INSTALLED_DIR}/lib,--whole-archive,-L{INSTALLED_DIR}/lib/drivers,-L{INSTALLED_DIR}/lib,-lnlohmann_json_schema_validator,-ltensorstore_driver_zarr_bzip2_compressor,-ltensorstore_driver_zarr_driver,-ltensorstore_driver_zarr_spec,-ltensorstore_driver_zarr_zlib_compressor,-ltensorstore_driver_zarr_zstd_compressor,-ltensorstore_driver_zarr_blosc_compressor,-ltensorstore_kvstore_gcs_http,-ltensorstore_kvstore_gcs_gcs_resource,-ltensorstore_kvstore_gcs_validate,-ltensorstore_kvstore_gcs_http_gcs_resource,-ltensorstore_driver_json,-ltensorstore_internal_cache_cache_pool_resource,-ltensorstore_internal_data_copy_concurrency_resource,-ltensorstore_kvstore_file,-ltensorstore_internal_file_io_concurrency_resource,-ltensorstore_internal_cache_kvs_backed_chunk_cache,-labsl,-lblosc,-ltensorstore,-lre2,-lriegeli,-lcurl,-lopenssl,--no-whole-archive,-lpthread,-lm"
-# # Define the programs
-# programs = {
-#     "helloWorld": ["helloWorld.cpp"],
-#     "helloMDIO": ["helloMDIO.cpp"],
-#     # "clip": ["clip.cpp"]
-# }
-
-# # Build the programs
-# for prog_name, sources in programs.items():
-#     env_copy = myenv.Clone()
-#     if "helloMDIO.cpp" in sources:
-#         # Use the corrected Makefile LDFLAGS string
-#         env_copy.Replace(LINKFLAGS=LDFLAGS_STRING.split())
-#     env_copy.Program(prog_name, sources)
-
-
-# import os
-# import sys
-# import glob
-
-# # Explicitly add Madagascar's Python path
-# RSFSRC = os.environ.get("RSFSRC", "/home/brian_michell_tgs_com/source/Madagascar")
-# sys.path.append(os.path.join(RSFSRC, "python"))
-
-# # Clone the Madagascar environment
-# myenv = Environment()
-
-# # Set paths for the installed MDIO library
-# INSTALLED_DIR = "/home/brian_michell_tgs_com/source/Madagascar/installed_mdio"
-
-# # Define base directory for includes
-# BASE_DIR = os.path.join(INSTALLED_DIR, "include")
-
-# # Add the base include directory itself
-# myenv.Append(CPPPATH=[BASE_DIR])
-
-# # Get all direct child directories, excluding gtest
-# DIRS = [d for d in glob.glob(os.path.join(BASE_DIR, "*"))
-#         if os.path.isdir(d) and "gtest-src" not in d]
-
-# # Add special case directories
-# DIRS.append(os.path.join(INSTALLED_DIR, "include/nlohmann_json-src/include"))
-# DIRS.append(os.path.join(INSTALLED_DIR, "include/half-src/include"))
-
-# # ALSO add Madagascar's own include directory so we can find rsf.hh
-# # Typically found in $RSFSRC/include
-# MAD_INC = os.path.join(RSFSRC, "include")
-# DIRS.append(MAD_INC)
-
-# # Update include paths
-# myenv.Append(CPPPATH=DIRS)
-
-# # Add compilation flags
-# myenv.Append(CXXFLAGS=[
-#     "-w",  # Disable warnings
-#     "-DMAX_NUM_SLICES=32",
-#     "-DNO_BLAS"  # Disable BLAS to avoid dependency on cblas.h
-# ])
-
-# print("Final CPPPATH:", myenv.get("CPPPATH"))
-
-# # Add library paths
-# myenv.Append(LIBPATH=[
-#     os.path.join(INSTALLED_DIR, "lib"),
-#     os.path.join(INSTALLED_DIR, "lib/drivers"),
-# ])
-
-# # Use a predefined LDFLAGS string from Makefile, replacing shell-style variables with Python formatting
-# LDFLAGS_STRING = f"-Wl,-rpath,{INSTALLED_DIR}/lib/drivers,-rpath,{INSTALLED_DIR}/lib,--whole-archive,-L{INSTALLED_DIR}/lib/drivers,-L{INSTALLED_DIR}/lib,-lnlohmann_json_schema_validator,-ltensorstore_driver_zarr_bzip2_compressor,-ltensorstore_driver_zarr_driver,-ltensorstore_driver_zarr_spec,-ltensorstore_driver_zarr_zlib_compressor,-ltensorstore_driver_zarr_zstd_compressor,-ltensorstore_driver_zarr_blosc_compressor,-ltensorstore_kvstore_gcs_http,-ltensorstore_kvstore_gcs_gcs_resource,-ltensorstore_kvstore_gcs_validate,-ltensorstore_kvstore_gcs_http_gcs_resource,-ltensorstore_driver_json,-ltensorstore_internal_cache_cache_pool_resource,-ltensorstore_internal_data_copy_concurrency_resource,-ltensorstore_kvstore_file,-ltensorstore_internal_file_io_concurrency_resource,-ltensorstore_internal_cache_kvs_backed_chunk_cache,-labsl,-lblosc,-ltensorstore,-lre2,-lriegeli,-lcurl,-lopenssl,--no-whole-archive,-lpthread,-lm"
-
-# # Define the programs
-# programs = {
-#     "helloWorld": ["helloWorld.cpp"],
-#     "helloMDIO": ["helloMDIO.cpp"],
-#     # Example: the clip example that uses rsf.hh
-#     "clip": ["clip.cpp"]
-# }
-
-# # Build the programs
-# for prog_name, sources in programs.items():
-#     env_copy = myenv.Clone()
-#     # Only use MDIO's LDFLAGS for helloMDIO
-#     if "helloMDIO.cpp" in sources:
-#         env_copy.Replace(LINKFLAGS=LDFLAGS_STRING.split())
-#     env_copy.Program(prog_name, sources)
-
-
-# import os
-# import sys
-# import glob
-import os, sys, re, string, glob
+import os, sys, string, glob
 sys.path.append('../../framework')
 import bldutil
 
+progs = '''
+klipp
+'''
 
-# Explicitly add Madagascar's Python path
-RSFSRC = os.environ.get("RSFSRC", "/home/brian_michell_tgs_com/source/Madagascar")
-sys.path.append(os.path.join(RSFSRC, "python"))
-
-# Clone the Madagascar environment
-# myenv = Environment()
 try:  # distributed version
-    Import('env root pkgdir bindir')
-    myenv = env.Clone()
+    Import('env root bindir pkgdir')
+    env = env.Clone()
 except: # local version
-    myenv = bldutil.Debug()
+    env = bldutil.Debug()
     root = None
     SConscript('../../api/c++/SConstruct')
 
-myenv.Prepend(CPPPATH=['../../include'],
-            LIBPATH=['../../lib'],
-            LIBS=[myenv.get('DYNLIB','')+'rsf'])
-
-if 'c++' in myenv.get('API',[]):
-    myenv.Prepend(LIBS=[myenv.get('DYNLIB','')+'rsf++'])
-
-# Set paths for the installed MDIO and Madagascar libraries
-INSTALLED_DIR = "/home/brian_michell_tgs_com/source/Madagascar/installed_mdio"
-MAD_LIB = os.path.join(RSFSRC, "lib")
-
-# Define base directory for includes
-BASE_DIR = os.path.join(INSTALLED_DIR, "include")
-
-# Add the base include directory itself
-myenv.Append(CPPPATH=[BASE_DIR])
-
-# Get all direct child directories, excluding gtest
-DIRS = [d for d in glob.glob(os.path.join(BASE_DIR, "*"))
-        if os.path.isdir(d) and "gtest-src" not in d]
-
-# Add special case directories
-DIRS.append(os.path.join(INSTALLED_DIR, "include/nlohmann_json-src/include"))
-DIRS.append(os.path.join(INSTALLED_DIR, "include/half-src/include"))
-
-# ALSO add Madagascar's own include directory so we can find rsf.hh
-# Typically found in $RSFSRC/include
-MAD_INC = os.path.join(RSFSRC, "include")
-DIRS.append(MAD_INC)
-
-# Update include paths
-myenv.Append(CPPPATH=DIRS)
-print("Before appending CXXFLAGS:", myenv.get("CXXFLAGS"))
+env.Append(CPPPATH=['../../include'],
+           LIBPATH=['../../lib'],
+           LIBS=['rsf++', 'rsf', 'tirpc', 'nsl'])
 
 auxFlags = [
-    # I need to have a leading space, as the CXXFLAGS is a single string.
-    " -w",  # Disable warnings
-    " -DMAX_NUM_SLICES=32",
-    " -DNO_BLAS",  # Disable BLAS to avoid dependency on cblas.h
-    " -DFS_HAS_RPC=False"
+    "-w",
+    "-DMAX_NUM_SLICES=32",
+    "-DNO_BLAS",
+    "-DFS_HAS_RPC=False"
 ]
-
 for flag in auxFlags:
-    myenv.Append(CXXFLAGS=flag)
+    env.Append(CXXFLAGS=f" {flag}")
 
-# Add compilation flags
-# myenv.Append(CXXFLAGS=[
-#     "-w",  # Disable warnings
-#     "-DMAX_NUM_SLICES=32",
-#     "-DNO_BLAS",  # Disable BLAS to avoid dependency on cblas.h
-#     "-DFS_HAS_RPC=False"
-# ])
-print("After appending CXXFLAGS:", myenv.get("CXXFLAGS"))
+if int(env.get('MDIO', 0)):
+    print("MDIO support enabled. Appending MDIO dependency flags.")
+    mdio_dir = os.path.join(root, 'mdio_installation') if root else 'mdio_installation'
+    env.Append(CPPPATH=[os.path.join(mdio_dir, 'inst', 'include')])
+    env.Append(LIBPATH=[os.path.join(mdio_dir, 'inst', 'lib'),
+                        os.path.join(mdio_dir, 'inst', 'lib', 'drivers')])
+    env.Append(CCFLAGS=['-DHAVE_MDIO'])
+    LDFLAGS_STRING = f"-Wl,-rpath,{os.path.join(mdio_dir, 'inst', 'lib')},-rpath,{os.path.join(mdio_dir, 'inst', 'lib', 'drivers')},--whole-archive,-L{os.path.join(mdio_dir, 'inst', 'lib')},-L{os.path.join(mdio_dir, 'inst', 'lib', 'drivers')},-lnlohmann_json_schema_validator,-ltensorstore_driver_zarr_bzip2_compressor,-ltensorstore_driver_zarr_driver,-ltensorstore_driver_zarr_spec,-ltensorstore_driver_zarr_zlib_compressor,-ltensorstore_driver_zarr_zstd_compressor,-ltensorstore_driver_zarr_blosc_compressor,-ltensorstore_kvstore_gcs_http,-ltensorstore_kvstore_gcs_gcs_resource,-ltensorstore_kvstore_gcs_validate,-ltensorstore_kvstore_gcs_http_gcs_resource,-ltensorstore_driver_json,-ltensorstore_internal_cache_cache_pool_resource,-ltensorstore_internal_data_copy_concurrency_resource,-ltensorstore_kvstore_file,-ltensorstore_internal_file_io_concurrency_resource,-ltensorstore_internal_cache_kvs_backed_chunk_cache,-labsl,-lblosc,-ltensorstore,-lre2,-lriegeli,-lcurl,-lopenssl,--no-whole-archive,-lpthread,-lm"
+    env.Append(LINKFLAGS=LDFLAGS_STRING.split())
+    DIRS = [d for d in glob.glob(os.path.join(mdio_dir, "inst", "include", "*"))
+            if os.path.isdir(d) and "gtest-src" not in d]
+    DIRS.append(os.path.join(mdio_dir, "inst", "include", "nlohmann_json-src", "include"))
+    DIRS.append(os.path.join(mdio_dir, "inst", "include", "half-src", "include"))
+    env.Append(CPPPATH=DIRS)
+else:
+    print("WARNING: MDIO support is disabled. Compiling without MDIO support.")
+    env.Append(CCFLAGS=['-DNO_MDIO'])
 
-print("Final CPPPATH:", myenv.get("CPPPATH"))
+mains = Split(progs)
+for prog in mains:
+    sources = [prog + '.cc']
+    prog_target = env.Program(prog, sources)
+    if root:
+        env.Install(bindir, prog_target)
 
-# Add library paths
-myenv.Append(LIBPATH=[
-    os.path.join(INSTALLED_DIR, "lib"),
-    os.path.join(INSTALLED_DIR, "lib/drivers"),
-    MAD_LIB
-])
-
-# Use a predefined LDFLAGS string from Makefile, replacing shell-style variables with Python formatting
-LDFLAGS_STRING = f"-Wl,-rpath,{INSTALLED_DIR}/lib/drivers,-rpath,{INSTALLED_DIR}/lib,--whole-archive,-L{INSTALLED_DIR}/lib/drivers,-L{INSTALLED_DIR}/lib,-lnlohmann_json_schema_validator,-ltensorstore_driver_zarr_bzip2_compressor,-ltensorstore_driver_zarr_driver,-ltensorstore_driver_zarr_spec,-ltensorstore_driver_zarr_zlib_compressor,-ltensorstore_driver_zarr_zstd_compressor,-ltensorstore_driver_zarr_blosc_compressor,-ltensorstore_kvstore_gcs_http,-ltensorstore_kvstore_gcs_gcs_resource,-ltensorstore_kvstore_gcs_validate,-ltensorstore_kvstore_gcs_http_gcs_resource,-ltensorstore_driver_json,-ltensorstore_internal_cache_cache_pool_resource,-ltensorstore_internal_data_copy_concurrency_resource,-ltensorstore_kvstore_file,-ltensorstore_internal_file_io_concurrency_resource,-ltensorstore_internal_cache_kvs_backed_chunk_cache,-labsl,-lblosc,-ltensorstore,-lre2,-lriegeli,-lcurl,-lopenssl,--no-whole-archive,-lpthread,-lm"
-
-# Madagascar libraries
-MAD_LIBS = ["rsf++"]
-
-# Define the programs
-programs = {
-    "helloWorld": ["helloWorld.cpp"],
-    "helloMDIO": ["helloMDIO.cpp"],
-    # Example: the clip example that uses rsf.hh
-    "clip": ["clip.cpp"]
-}
-
-# Build the programs
-for prog_name, sources in programs.items():
-    env_copy = myenv.Clone()
-    # Apply MDIO linking flags to helloMDIO
-    if "helloMDIO.cpp" in sources:
-        env_copy.Replace(LINKFLAGS=LDFLAGS_STRING.split())
-    # Apply Madagascar linking flags to clip
-    elif "clip.cpp" in sources:
-        env_copy.Append(LIBS=MAD_LIBS)
-    env_copy.Program(prog_name, sources)
-
+######################################################################
+# SELF-DOCUMENTATION
+######################################################################
+if root:
+    user = os.path.basename(os.getcwd())
+    main_doc = 'sf%s.py' % user
+    
+    docs = [env.Doc(prog, prog + '.cc', lang='c++') for prog in Split(progs)]
+    env.Depends(docs, '#/framework/rsf/doc.py')
+    doc = env.RSF_Docmerge(main_doc, docs)
+    env.Install(pkgdir, doc)
+##################################################################### 
