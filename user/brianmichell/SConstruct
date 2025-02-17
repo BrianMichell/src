@@ -24,7 +24,7 @@ except: # local version
 
 env.Append(CPPPATH=['../../include'],
            LIBPATH=['../../lib'],
-           LIBS=['rsf++', 'rsf', 'tirpc', 'nsl'])
+           LIBS=['rsf++', 'rsf'])
 
 auxFlags = [
     "-w",
