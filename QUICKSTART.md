@@ -64,7 +64,7 @@ api_cpp_dir = Dir('#/api/c++').abspath
 if api_cpp_dir not in sys.path:
     sys.path.insert(0, api_cpp_dir)
 import bldutil
-import setup_mdio  # Import the module directly
+import setup_mdio
 ```
 
 ### A list of our C++ programs
@@ -92,8 +92,6 @@ env.Append(CPPPATH=['../../include'],
            LIBS=['rsf++', 'rsf'])
 
 auxFlags = [
-    "-w",
-    "-DMAX_NUM_SLICES=32",
     "-DNO_BLAS",
     "-DFS_HAS_RPC=False"
 ]
@@ -103,6 +101,7 @@ for flag in auxFlags:
 if int(env.get('MDIO', 0)):
     print("MDIO support enabled. Configuring MDIO dependency via API module.")
     setup_mdio.setup_mdio(env, root)
+    # Uncomment below for debugging output for compiling/linking with MDIO
     # print("###########After setting up MDIO###########")
     # print(f"CPPPATH: {env.get('CPPPATH')}")
     # print(f"LIBPATH: {env.get('LIBPATH')}")
@@ -161,9 +160,9 @@ Be sure to update the name in the [SConstruct progs](#a-list-of-our-c-programs) 
 
 #ifdef NO_MDIO
 #error "Madagascar API not built with MDIO support; disable MDIO dependent code or rebuild API with MDIO"
-#else
+#else  // NO_MDIO
 #include <mdio/mdio.h>
-#endif
+#endif  // NO_MDIO
 ```
 
 ### Main function
@@ -174,6 +173,8 @@ Be sure to update the name in the [SConstruct progs](#a-list-of-our-c-programs) 
     #ifndef NO_MDIO
     // BEGIN HELLO WORLD MDIO
     std::string path = "s3://tgs-opendata-poseidon/full_stack_agc.mdio";
+    // It's required to keep the path as a string in versions less than v0.1.2-pre-release.
+    // Applying string literals to the Open method may work for some compilers and fail in other
 
     mdio::Future<mdio::Dataset> dsRes = mdio::Dataset::Open(path, mdio::constants::kOpen);
     if (!dsRes.status().ok()) {
@@ -184,7 +185,7 @@ Be sure to update the name in the [SConstruct progs](#a-list-of-our-c-programs) 
     mdio::Dataset ds = dsRes.value();
     std::cout << ds << std::endl;
     // END HELLO WORLD MDIO
-    #endif
+    #endif  // NO_MDIO
 ```
 
 #### Clip example

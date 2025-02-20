@@ -12,9 +12,9 @@
 
 #ifdef NO_MDIO
 #error "Madagascar API not built with MDIO support; disable MDIO dependent code or rebuild API with MDIO"
-#else
+#else  // NO_MDIO
 #include <mdio/mdio.h>
-#endif
+#endif  // NO_MDIO
 
 int main(int argc, char* argv[])
 {
@@ -22,6 +22,8 @@ int main(int argc, char* argv[])
     #ifndef NO_MDIO
     // BEGIN HELLO WORLD MDIO
     std::string path = "s3://tgs-opendata-poseidon/full_stack_agc.mdio";
+    // It's required to keep the path as a string in versions less than v0.1.2-pre-release.
+    // Applying string literals to the Open method may work for some compilers and fail in others.
 
     mdio::Future<mdio::Dataset> dsRes = mdio::Dataset::Open(path, mdio::constants::kOpen);
     if (!dsRes.status().ok()) {
@@ -32,7 +34,7 @@ int main(int argc, char* argv[])
     mdio::Dataset ds = dsRes.value();
     std::cout << ds << std::endl;
     // END HELLO WORLD MDIO
-    #endif
+    #endif  // NO_MDIO
     
     sf_init(argc, argv); // Initialize RSF
 
