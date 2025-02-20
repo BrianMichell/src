@@ -19,7 +19,6 @@ int main(int argc, char* argv[])
 
     #ifndef NO_MDIO
     // BEGIN HELLO WORLD MDIO
-    // std::string path = "/home/brian_michell_tgs_com/source/mdio-cpp/build/mdio/zarrs/acceptance";
     std::string path = "s3://tgs-opendata-poseidon/full_stack_agc.mdio";
 
     mdio::Future<mdio::Dataset> dsRes = mdio::Dataset::Open(path, mdio::constants::kOpen);

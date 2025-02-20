@@ -5,10 +5,8 @@ from SCons.Script import Dir
 api_cpp_dir = Dir('#/api/c++').abspath
 if api_cpp_dir not in sys.path:
     sys.path.insert(0, api_cpp_dir)
-# from setup_mdio import setup_mdio
 import bldutil
 import setup_mdio  # Import the module directly
-from setup_mdio import setup_mdio  # Then import the functio
 
 progs = '''
 klipp
@@ -27,8 +25,6 @@ env.Append(CPPPATH=['../../include'],
            LIBS=['rsf++', 'rsf'])
 
 auxFlags = [
-    "-w",
-    "-DMAX_NUM_SLICES=32",
     "-DNO_BLAS",
     "-DFS_HAS_RPC=False"
 ]
@@ -37,12 +33,12 @@ for flag in auxFlags:
 
 if int(env.get('MDIO', 0)):
     print("MDIO support enabled. Configuring MDIO dependency via API module.")
-    # env = setup_mdio(env, root)
-    setup_mdio(env, root)
-    print("###########After setting up MDIO###########")
-    print(f"CPPPATH: {env.get('CPPPATH')}")
-    print(f"LIBPATH: {env.get('LIBPATH')}")
-    print(f"LINKFLAGS: {env.get('LINKFLAGS')}")
+    setup_mdio.setup_mdio(env, root)
+    # Uncomment below for debugging output for compiling/linking with MDIO
+    # print("###########After setting up MDIO###########")
+    # print(f"CPPPATH: {env.get('CPPPATH')}")
+    # print(f"LIBPATH: {env.get('LIBPATH')}")
+    # print(f"LINKFLAGS: {env.get('LINKFLAGS')}")
 else:
     print("WARNING: MDIO support is disabled. Compiling without MDIO support.")
     env.Append(CCFLAGS=['-DNO_MDIO'])

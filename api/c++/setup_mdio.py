@@ -20,7 +20,7 @@ def setup_mdio(env, root=None):
             install_path = os.path.join(mdio_dir, 'inst')
             print(f"Installing to {install_path}")
             command_str = (
-                f'git clone --branch drivers_enhancement https://github.com/BrianMichell/mdio-cpp-installer.git {mdio_dir} '
+                f'git clone https://github.com/BrianMichell/mdio-cpp-installer.git {mdio_dir} '
                 f'&& cd {mdio_dir} '
                 f'&& chmod +x install.sh '
                 f'&& ./install.sh {install_path} --curl'
@@ -81,9 +81,7 @@ def setup_mdio(env, root=None):
     env.Append(LINKFLAGS=LDFLAGS_STRING.split())
     auxFlags = [
         "-w",
-        "-DMAX_NUM_SLICES=32",
-        "-DNO_BLAS",
-        "-DFS_HAS_RPC=False"
+        "-DMAX_NUM_SLICES=32"
     ]
     for flag in auxFlags:
         env.Append(CXXFLAGS=f" {flag}")
