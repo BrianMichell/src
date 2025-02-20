@@ -1,5 +1,7 @@
-/* Clip the data.
- *
+/* A Hello World example of opening an MDIO file.
+ * 
+ * https://ahay.org/wiki/Guide_to_madagascar_API#C++_interface
+ * Clip the data.
  * This program reads an RSF input and for each trace clips sample values
  * that exceed the given threshold (and similarly clips values below
  * the negative threshold). The threshold is passed via the "clip" parameter.
