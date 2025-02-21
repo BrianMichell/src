@@ -1,10 +1,26 @@
-#include "mdio_file.h"
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <mdio/mdio.h>
+
+void _sf_file_error(bool err) {
+    std::string path = "s3://tgs-opendata-poseidon/full_stack_agc.mdio";
+
+    mdio::Future<mdio::Dataset> dsRes = mdio::Dataset::Open(path, mdio::constants::kOpen);
+    if (!dsRes.status().ok()) {
+        std::cerr << "Failed to open dataset: " << dsRes.status() << std::endl;
+        return 1;
+    }
+
+    mdio::Dataset ds = dsRes.value();
+    std::cout << ds << std::endl;
+}
+
 
 extern "C" {
+
+#include "../c/file.h"
 
 struct sf_File {
     FILE* stream;
@@ -13,6 +29,9 @@ struct sf_File {
 };
 
 void sf_file_error(bool err) {
+    // demo wrapper ....
+    _sf_file_error(err);
+
     if (err) {
         fprintf(stderr, "sf_file error occurred!\n");
         exit(1);

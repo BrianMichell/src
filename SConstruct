@@ -12,6 +12,9 @@ import bldutil, configure, setenv, rsf.doc
 
 env = Environment()
 
+env.Append(CCFLAGS=['-Wno-unused-variable', '-Wno-unused-parameter'])
+env.Append(CFLAGS=['-Wno-unused-variable', '-Wno-unused-parameter'])
+
 if os.path.isfile('config.py'):
     import config
     root = config.RSFROOT
@@ -151,6 +154,7 @@ if type(api) is str:
 api.insert(0,'c')
 api.insert(1,'python')
 api.insert(2,'julia')
+api.insert(3,'mdio')
 
 Default('build/include')
 Default('build/lib')
