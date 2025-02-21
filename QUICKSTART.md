@@ -42,6 +42,9 @@ cd src
 # There may be some warnings regarding line terminations. These can safely be ignored.
 ./configure --prefix=~/install
 
+# set env variables (may want to add this to ~/.bashrc)
+source ~/src/env.sh
+
 # The install process will generate a lot of output. Use the commented out version to redirect it to a log.
 # scons -j32 install MDIO=1 > inst.log 2>&1
 scons -j32 install MDIO=1
