@@ -42,14 +42,14 @@ int main (int argc, char* argv[])
     dim = sf_filedims (in,n);
     dim1 = -1;
     for (i=0; i < dim; i++) {
-	snprintf(key,6,"rect%d",i+1);
+	snprintf(key,8,"rect%d",i+1);
 	if (!sf_getint(key,rect+i)) rect[i]=1;
 	/*( rect#=(1,1,...) smoothing radius on #-th axis )*/ 
 	if (rect[i] > 1) dim1 = i;
-	snprintf(key,6,"diff%d",i+1);
+	snprintf(key,8,"diff%d",i+1);
 	if (!sf_getbool(key,diff+i)) diff[i]=false;
 	/*( diff#=(n,n,...) differentiation on #-th axis )*/
-	snprintf(key,5,"box%d",i+1);
+	snprintf(key,8,"box%d",i+1);
 	if (!sf_getbool(key,box+i)) box[i]=false;
 	/*( box#=(n,n,...) box (rather than triangle) on #-th axis )*/
     }
