@@ -84,7 +84,7 @@
 #define SF_MAX_DIM 9
 /*^*/
 
-typedef struct sf_File *sf_file;
+typedef struct sf_File* sf_file;
 /*^*/
 
 typedef enum {SF_UCHAR, SF_CHAR, SF_INT, SF_FLOAT, SF_COMPLEX, SF_SHORT, SF_DOUBLE, SF_LONG} sf_datatype;
@@ -125,6 +125,10 @@ static void sf_input_error(sf_file file, const char* message, const char* name);
 static void convert2(int nbuf, const char* buf1, char* buf2);
 static void convert4(int nbuf, const char* buf1, char* buf2);
 #endif
+
+void sf_describe_file(const sf_file const file) {
+	sprintf("%s\n", "This is a standard sf_File file type");
+}
 
 void sf_file_error(bool err)
 /*< set error on opening files >*/
