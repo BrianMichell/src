@@ -2,31 +2,44 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <mdio/mdio.h>
+#include <iostream>
+#include <sstream>
+#include <string>
+
+#include <mdio/mdio.h> 
+
 
 void _sf_file_error(bool err) {
-    std::string path = "s3://tgs-opendata-poseidon/full_stack_agc.mdio";
-
-    mdio::Future<mdio::Dataset> dsRes = mdio::Dataset::Open(path, mdio::constants::kOpen);
-    if (!dsRes.status().ok()) {
-        std::cerr << "Failed to open dataset: " << dsRes.status() << std::endl;
-        return 1;
-    }
-
-    mdio::Dataset ds = dsRes.value();
-    std::cout << ds << std::endl;
+    fprintf(stdout, "sf_file error occurred!\n");
 }
 
+void chomp(std::string& str) {
+    str.erase(str.find_last_not_of(" \t\n\r") + 1);
+}
 
 extern "C" {
 
 #include "../c/file.h"
 
+// Defines a Madagascar filetype
 struct sf_File {
     FILE* stream;
+    bool ok;
+    char* mdio_path;
+    char* mdio_dataset_description;
     sf_datatype type;
     sf_dataform form;
 };
+
+
+void sf_describe_file(const sf_File* const mdio_file) {
+    if(mdio_file->ok){
+        printf("mdio path (good): %s\n", mdio_file->mdio_path);
+        printf("mdio path (good): %s\n", mdio_file->mdio_dataset_description);
+    } else {
+        printf("mdio path (bad): %s\n", mdio_file->mdio_path);        
+    }    
+}
 
 void sf_file_error(bool err) {
     // demo wrapper ....
@@ -38,9 +51,31 @@ void sf_file_error(bool err) {
     }
 }
 
-sf_file sf_input(const char* tag) {
-    (void)tag;
-    return (sf_file)malloc(sizeof(struct sf_File));
+sf_file sf_input(const char* path) {
+    std::string _path(path);
+    // remove new line chars
+    chomp(_path);
+
+    auto mdio_dataset = mdio::Dataset::Open(
+        std::string(_path), mdio::constants::kOpen
+    ).result();
+    
+    // ... don't judge me ...
+    sf_File* new_file = new sf_File();
+
+    new_file->ok = mdio_dataset.ok();
+    new_file->mdio_path = strdup(path);
+
+    if(!mdio_dataset.ok()){
+        std::cout << mdio_dataset.status() << std::endl;
+        return new_file;
+    }
+
+    std::ostringstream oss;
+    oss << mdio_dataset.value();
+    new_file->mdio_dataset_description = strdup(oss.str().c_str());
+
+    return new_file;
 }
 
 sf_file sf_output(const char* tag) {
@@ -121,7 +156,7 @@ void sf_seek(sf_file file, off_t offset, int whence) {
 }
 
 bool sf_endian(void) {
-    int num = 1;
+    int num = 1337;
     return (*(char*)&num == 1);
 }
 

@@ -26,6 +26,7 @@ env.Prepend(
     LIBPATH=['../../lib'] 
 )
 
+
 # --- MDIO Optional Dependency Support ---
 import setup_mdio
 from setup_mdio import setup_mdio
@@ -37,12 +38,18 @@ if int(env.get('MDIO', 0)):  # Check if MDIO is enabled
 mdio_test_src = "mdio_file_test.c"
 sf_file_src = "mdio_file.cc"
 
+env.Replace(LINK="g++")
+
 # Compile C and C++ sources
 mdio_test_obj = env.Object(mdio_test_src)
 sf_file_obj = env.Object(sf_file_src)
 
 # Link them into the mdio_test executable
-mdio_test_exe = env.Program("file_test", [mdio_test_obj, sf_file_obj])
+mdio_test_exe = env.Program("mdio_file_test", [mdio_test_obj, sf_file_obj])
 
 # Set default build target
 Default(mdio_test_exe)
+
+
+sf_file_obj = env.Object(sf_file_src)
+print(f"Compiling: {sf_file_src} -> {sf_file_obj}")
